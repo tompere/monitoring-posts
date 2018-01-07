@@ -1,0 +1,6 @@
+.nvmrc
+node_modules/
+package-lock.json
+result.json
+dataset-*.json
+dataset-*.csv
