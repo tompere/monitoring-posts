@@ -1,4 +1,5 @@
 const _ = require('lodash')
+const { normalizeKey } = require('../../utils')
 
 const PAGE_DATA_KEYS = ['component_properties', 'document_data', 'design_data', 'behaviors_data']
 
@@ -13,7 +14,7 @@ const SCHEMAS = PAGE_DATA_KEYS.reduce(
 )
 
 function columnName({ id, dataType, schemaDataType }) {
-  return `${id}_${dataType}_${schemaDataType}_total_items`
+  return normalizeKey(`${id}_${dataType}_${schemaDataType}_total_items`)
 }
 
 function calcCompItemsByType({ id, page }, dataType) {

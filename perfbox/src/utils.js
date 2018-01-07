@@ -10,7 +10,11 @@ function log(msg, config = {}) {
 }
 
 function normalizeKey(val) {
-  return val.toLowerCase().replace(/\s/g, '_')
+  return val
+    .trim()
+    .split(/(?=[A-Z])/)
+    .join('_')
+    .toLowerCase()
 }
 
 const DEV_URL = [
