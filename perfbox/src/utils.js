@@ -1,21 +1,30 @@
 const lineByLine = require('n-readlines')
 const Raven = require('raven')
 
+const executionId = `exec_${new Date().getTime()}`
+
 Raven.config(
   process.env.PRODUCTION &&
-    'https://88f1d274a601463192b96256d88b7e09:fbdb85f025b64e63b428b2aedf8f54ad@sentry.io/267972'
+    'https://88f1d274a601463192b96256d88b7e09:fbdb85f025b64e63b428b2aedf8f54ad@sentry.io/267972',
+  {
+    release: executionId,
+    autoBreadcrumbs: true,
+    captureUnhandledRejections: true,
+  }
 ).install()
 
 function log(msg, config = {}) {
-  const ravenMsg = `${msg} [${Math.random()}]`
+  const timestamp = new Date().toISOString()
   if (config.err) {
     Raven.captureException(`${config.err}`, {
       level: 'error',
     })
+    console.log('\x1b[31m', `${timestamp} ${msg}`)
   } else {
-    Raven.captureMessage(`${ravenMsg}`, {
+    Raven.captureMessage(`${msg}`, {
       level: 'info',
     })
+    console.log('\x1b[36m%s\x1b[0m', `${timestamp} ${msg}`)
   }
 }
 
@@ -51,4 +60,4 @@ function* urlsGenerator() {
   }
 }
 
-module.exports = { log, normalizeKey, urlsGenerator: urlsGenerator() }
+module.exports = { log, normalizeKey, executionId, urlsGenerator: urlsGenerator() }

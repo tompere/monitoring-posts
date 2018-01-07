@@ -1,8 +1,9 @@
 const fs = require('fs')
 const _ = require('lodash')
 const prependFile = require('prepend-file')
+const { executionId } = require('../utils')
 
-const datasetFilePath = `${__dirname}/../../dataset-${new Date().getTime()}.csv`
+const datasetFilePath = `${__dirname}/../../dataset-${executionId}.csv`
 const cache = { keys: null, firstObj: null }
 
 function normalizeOutput(jsonOutput) {
