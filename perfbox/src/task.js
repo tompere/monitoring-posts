@@ -1,5 +1,4 @@
 const start = process.hrtime()
-const stringify = require('csv-stringify')
 const compItemsMetadata = require('./pageJson/data-items/comps-data-items')
 const fetcher = require('./fecther/fetcher')
 
@@ -14,12 +13,11 @@ fetcher
         'santa_layout_duration',
         'santa_relayout_duration',
       ].reduce((total, metricKey) => total + Math.pow(otherMetrics[metricKey], 2), 0)
-      const payload = {
+      const output = JSON.stringify({
         ...compItemsMetadata.execJson({ masterPage, page }),
         ...otherMetrics,
         TARGET,
-      }
-      const output = JSON.stringify(payload, null, 2)
+      })
       const duration = process.hrtime(start)[0]
       process.send({ url, output, duration })
     } else {

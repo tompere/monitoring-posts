@@ -1,6 +1,5 @@
 const start = process.hrtime()
 
-const intoStream = require('into-stream')
 const { fork, exec } = require('child_process')
 const { log, urlsGenerator } = require('./utils')
 const { add, getFilename, finalizeDataSet } = require('./dataset-builder')
