@@ -18,21 +18,6 @@ function normalizeOutput(jsonOutput) {
   return _.pick(obj, cache.keys)
 }
 
-async function add(output) {
-  return new Promise(resolve => {
-    const o = normalizeOutput(output)
-    if (_.isEmpty(o)) {
-      resolve()
-    }
-    const csvRow = `${_.values(o).join(',')}\n`
-    fs.appendFile(datasetFilePath, csvRow, resolve)
-  })
-}
-
-const getFilename = () => datasetFilePath
-
-const getFirstObj = () => cache.firstObj
-
 const prepandColumns = () => {
   return new Promise((resolve, reject) => {
     prependFile(datasetFilePath, `${cache.keys.join(',')}\n`, err => {
@@ -44,4 +29,22 @@ const prepandColumns = () => {
   })
 }
 
-module.exports = { add, getFilename, getFirstObj, prepandColumns }
+async function finalizeDataSet() {
+  await add(cache.firstObj)
+  await prepandColumns()
+}
+
+const getFilename = () => datasetFilePath
+
+function add(output) {
+  return new Promise(resolve => {
+    const o = normalizeOutput(output)
+    if (_.isEmpty(o)) {
+      resolve()
+    }
+    const csvRow = `${_.values(o).join(',')}\n`
+    fs.appendFile(datasetFilePath, csvRow, resolve)
+  })
+}
+
+module.exports = { add, getFilename, finalizeDataSet }

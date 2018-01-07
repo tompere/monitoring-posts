@@ -3,7 +3,7 @@ const start = process.hrtime()
 const intoStream = require('into-stream')
 const { fork, exec } = require('child_process')
 const { log, urlsGenerator } = require('./utils')
-const { add, getFilename, getFirstObj, prepandColumns } = require('./dataset-builder')
+const { add, getFilename, finalizeDataSet } = require('./dataset-builder')
 
 const execTask = url =>
   new Promise(resolve => {
@@ -48,12 +48,16 @@ async function main() {
       break
     }
   }
-  await Promise.all(tasks)
-  await add(getFirstObj())
+  const doneTasks = await Promise.all(tasks)
+  await finalizeDataSet()
+  log(
+    `finished successfully! analyzed ${doneTasks.length} sites in ${
+      process.hrtime(start)[0]
+    } seconds; see ${getFilename()}`
+  )
 }
 
 ;(async () => {
   await main()
-  await prepandColumns()
-  log(`done in ${process.hrtime(start)[0]} seconds; see ${getFilename()}`)
+  log(`done`)
 })()
