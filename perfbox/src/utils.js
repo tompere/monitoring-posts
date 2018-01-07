@@ -1,11 +1,21 @@
 const lineByLine = require('n-readlines')
+const Raven = require('raven')
+
+Raven.config(
+  process.env.PRODUCTION &&
+    'https://88f1d274a601463192b96256d88b7e09:fbdb85f025b64e63b428b2aedf8f54ad@sentry.io/267972'
+).install()
 
 function log(msg, config = {}) {
-  const timestamp = `[${new Date().toISOString()}]`
+  const ravenMsg = `${msg} [${Math.random()}]`
   if (config.err) {
-    console.log('\x1b[31m', `${timestamp} ${msg}`)
+    Raven.captureException(`${config.err}`, {
+      level: 'error',
+    })
   } else {
-    console.log('\x1b[36m%s\x1b[0m', `${timestamp} ${msg}`)
+    Raven.captureMessage(`${ravenMsg}`, {
+      level: 'info',
+    })
   }
 }
 
