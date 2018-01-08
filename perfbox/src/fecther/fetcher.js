@@ -68,11 +68,13 @@ async function onNetworkResponse(response, page, state) {
 
 async function fetchSiteMetrics(url) {
   const state = { results: [] }
+  const handleError = error => utils.log(error, { err: true })
   const isPageDone = pageDoneDefered(state)
   const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+  browser.process().on(handleError)
   const page = await browser.newPage()
   page.on('response', response => onNetworkResponse(response, page, state))
-  page.on('error', error => utils.log(error, { err: true }))
+  page.on('error', handleError)
   page.goto(`${url}`, { timeout: 60000 })
   await isPageDone
   await browser.close()
