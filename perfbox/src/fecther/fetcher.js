@@ -66,20 +66,27 @@ async function onNetworkResponse(response, page, state) {
   }
 }
 
+let browser
+
+async function init() {
+  browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+}
+
+async function close() {
+  await browser.close()
+}
+
 async function fetchSiteMetrics(url) {
   const state = { results: [] }
-  const handleError = error => utils.log(error, { err: true })
   const isPageDone = pageDoneDefered(state)
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
-  browser.process().on(handleError)
   const page = await browser.newPage()
   page.on('response', response => onNetworkResponse(response, page, state))
-  page.on('error', handleError)
-  page.goto(`${url}`, { timeout: 60000 })
+  page.on('error', error => utils.log(error, { err: true }))
+  page.goto(`${url}`, { timeout: 0 })
   await isPageDone
-  await browser.close()
+  page.close()
   const rawResults = await Promise.all(state.results)
   return processResults(rawResults)
 }
 
-module.exports = { fetchSiteMetrics }
+module.exports = { init, fetchSiteMetrics, close }

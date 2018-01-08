@@ -42,10 +42,10 @@ async function main() {
       }
       return shouldRun
     }, false)
-    log(`finished ${count.success} successful tasks, ${count.fail} failed tasks`)
     if (!run) {
       break
     }
+    log(`finished ${count.success} successful tasks, ${count.fail} failed tasks`)
     await waitForIt()
   }
   const doneTasks = await Promise.all(tasks)
