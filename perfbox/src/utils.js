@@ -2,14 +2,13 @@ const lineByLine = require('n-readlines')
 const Raven = require('raven')
 
 const executionId = `exec_${new Date().getTime()}`
-const isProd = process.env.PRODUCTION
 
 Raven.config(
-  isProd &&
+  process.env.PRODUCTION &&
     'https://88f1d274a601463192b96256d88b7e09:fbdb85f025b64e63b428b2aedf8f54ad@sentry.io/267972',
   {
     release: executionId,
-    autoBreadcrumbs: true,
+    autoBreadcrumbs: { console: false },
     captureUnhandledRejections: true,
   }
 ).install()
@@ -17,15 +16,15 @@ Raven.config(
 function log(msg, config = {}) {
   const timestamp = new Date().toISOString()
   if (config.err) {
-    Raven.captureException(`${config.err}`, {
+    Raven.captureException(`${config.err} [${timestamp}]`, {
       level: 'error',
     })
-    !isProd && console.log('\x1b[31m', `${timestamp} ${msg}`)
+    console.log('\x1b[31m', `[${timestamp}] ${msg}`)
   } else {
-    Raven.captureMessage(`${msg}`, {
+    Raven.captureMessage(`${msg} [${timestamp}]`, {
       level: 'info',
     })
-    !isProd && console.log('\x1b[36m%s\x1b[0m', `${timestamp} ${msg}`)
+    console.log('\x1b[36m%s\x1b[0m', `[${timestamp}] ${msg}`)
   }
 }
 
