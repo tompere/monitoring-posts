@@ -72,7 +72,7 @@ async function fetchSiteMetrics(url) {
   const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   const page = await browser.newPage()
   page.on('response', response => onNetworkResponse(response, page, state))
-  page.goto(`${url}`, { timeout: 0 })
+  page.goto(`${url}`, { timeout: 60000 })
   await isPageDone
   await browser.close()
   const rawResults = await Promise.all(state.results)
