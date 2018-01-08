@@ -69,7 +69,7 @@ async function onNetworkResponse(response, page, state) {
 async function fetchSiteMetrics(url) {
   const state = { results: [] }
   const isPageDone = pageDoneDefered(state)
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   const page = await browser.newPage()
   page.on('response', response => onNetworkResponse(response, page, state))
   page.goto(`${url}`, { timeout: 0 })
