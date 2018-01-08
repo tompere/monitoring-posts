@@ -8,7 +8,7 @@ Raven.config(
     'https://88f1d274a601463192b96256d88b7e09:fbdb85f025b64e63b428b2aedf8f54ad@sentry.io/267972',
   {
     release: executionId,
-    autoBreadcrumbs: { console: false },
+    autoBreadcrumbs: true,
     captureUnhandledRejections: true,
   }
 ).install()
