@@ -69,7 +69,9 @@ async function onNetworkResponse(response, page, state) {
 let browser
 
 async function init() {
-  browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+  browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+  })
 }
 
 async function close() {
