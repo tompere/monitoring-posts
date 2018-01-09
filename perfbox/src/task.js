@@ -10,10 +10,10 @@ const fetcher = require('./fecther/fetcher')
       const y = [
         'santa_render_duration',
         'santa_layout_duration',
-        'santa_relayout_duration',
+        'santa_re_layout_duration',
       ].reduce((total, metricKey) => total + Math.pow(otherMetrics[metricKey], 2), 0)
       const output = JSON.stringify({
-        ...compItemsMetadata.execJson({ masterPage, page }),
+        // ...compItemsMetadata.execJson({ masterPage, page }),
         ...otherMetrics,
         y,
       })
