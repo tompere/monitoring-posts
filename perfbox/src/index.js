@@ -1,3 +1,8 @@
+const appmetrics = require('appmetrics')
+appmetrics.monitor()
+require('appmetrics-dash').monitor()
+appmetrics.start()
+
 const start = process.hrtime()
 
 const { fork, exec } = require('child_process')
@@ -60,4 +65,5 @@ async function main() {
 ;(async () => {
   await main()
   log(`done`)
+  appmetrics.end()
 })()
