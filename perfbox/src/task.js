@@ -1,11 +1,12 @@
 const start = process.hrtime()
 const compItemsMetadata = require('./pageJson/data-items/comps-data-items')
 const fetcher = require('./fecther/fetcher')
-;(async () => {
-  const url = process.argv[2]
-  try {
-    await fetcher.init()
-    const { masterPage, page, ...otherMetrics } = await fetcher.fetchSiteMetrics(`${url}`)
+
+const url = process.argv[2]
+
+fetcher
+  .fetchSiteMetrics(`${url}`)
+  .then(({ masterPage, page, ...otherMetrics }) => {
     if (masterPage && page) {
       const y = [
         'santa_render_duration',
@@ -27,8 +28,7 @@ const fetcher = require('./fecther/fetcher')
         err: `missing pages: [${masterPage ? '' : 'masterPage'}], [${page ? '' : 'page'}]`,
       })
     }
-  } catch (err) {
+  })
+  .catch(err => {
     process.send({ url, output: null, duration: 0, err: `failed fetching pages: ${err}` })
-  }
-  await fetcher.close()
-})()
+  })

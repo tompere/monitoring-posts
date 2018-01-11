@@ -20,13 +20,11 @@ const execTask = url =>
 
 const manageExecution = () =>
   Promise.all(
-    new Array(1)
+    new Array(5)
       .join('c')
       .split('c')
       .map(() => execTask(urlsGenerator.next().value))
   )
-
-const waitForIt = (ms = 1500) => new Promise(resolve => setTimeout(() => resolve(), ms))
 
 async function main() {
   const tasks = []
@@ -51,7 +49,6 @@ async function main() {
       break
     }
     log(`finished ${count.success} successful tasks, ${count.fail} failed tasks`)
-    await waitForIt()
   }
   const doneTasks = await Promise.all(tasks)
   await finalizeDataSet()

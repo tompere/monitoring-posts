@@ -28,6 +28,8 @@ function log(msg, config = {}) {
   }
 }
 
+process.on('unhandledRejection', err => log(err, { err: true }))
+
 function normalizeKey(val) {
   return val
     .trim()
@@ -39,6 +41,7 @@ function normalizeKey(val) {
 const DEV_URL = [
   'https://www.jumpro.pe/',
   'http://admdejusticia.wixsite.com/admdejusticia',
+  'http://molchenko1983.wixsite.com/sushi-citi',
   'http://mcclureterri.wixsite.com/phatt',
 ]
 

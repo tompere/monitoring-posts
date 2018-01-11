@@ -53,8 +53,13 @@ const processResults = results =>
     {}
   )
 
-async function onNetworkResponse(response, page, state) {
-  if (isPageJsonResponse(response.url)) {
+const VALID_RESPONSE_CODES = [200, 301]
+
+async function onNetworkResponse(response, page, state, originUrl) {
+  if (response.url === originUrl && !_.includes(VALID_RESPONSE_CODES, response.status)) {
+    utils.log(`got ${response.status} for site ${response.url}`, { err: true })
+    state.reportPageDone()
+  } else if (isPageJsonResponse(response.url)) {
     state.results.push(asyncResult('pageJson', response.json()))
   } else if (isPageLoadDone(response.url)) {
     state.results.push(asyncResult('pageMetrics', page.metrics()))
@@ -66,29 +71,30 @@ async function onNetworkResponse(response, page, state) {
   }
 }
 
-let browser
-
-async function init() {
-  browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-  })
-}
-
-async function close() {
-  await browser.close()
-}
-
 async function fetchSiteMetrics(url) {
   const state = { results: [] }
   const isPageDone = pageDoneDefered(state)
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+  })
   const page = await browser.newPage()
-  page.on('response', response => onNetworkResponse(response, page, state))
+  page.on('response', response => onNetworkResponse(response, page, state, url))
   page.on('error', error => utils.log(error, { err: true }))
-  page.goto(`${url}`, { timeout: 0 })
-  await isPageDone
-  page.close()
-  const rawResults = await Promise.all(state.results)
-  return processResults(rawResults)
+  try {
+    const resp = await page.goto(`${url}`, { timeout: 45000 })
+    if (!resp) {
+      throw new Error(`got falsy page response for ${url} (probably 404)`)
+      await browser.close()
+    }
+    await isPageDone
+    await browser.close()
+    const rawResults = await Promise.all(state.results)
+    return processResults(rawResults)
+  } catch (err) {
+    utils.log(err, { err: true })
+    await browser.close()
+    return null
+  }
 }
 
-module.exports = { init, fetchSiteMetrics, close }
+module.exports = { fetchSiteMetrics }
