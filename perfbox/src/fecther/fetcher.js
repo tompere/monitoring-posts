@@ -2,6 +2,8 @@ const puppeteer = require('puppeteer')
 const _ = require('lodash')
 const utils = require('../utils')
 
+const GLOBAL_FETCH_TIMEOUT = 45000
+
 const asyncResult = (type, result) => Promise.resolve(result).then(value => ({ type, value }))
 
 const pageJsonMetrics = page => {
@@ -41,7 +43,11 @@ const isPageLoadDone = url => _.includes(url, '&evid=350')
 
 const pageDoneDefered = state =>
   new Promise(resolve => {
-    state.reportPageDone = () => resolve()
+    const autoTimeout = setTimeout(() => resolve(), GLOBAL_FETCH_TIMEOUT)
+    state.reportPageDone = () => {
+      clearTimeout(autoTimeout)
+      resolve()
+    }
   })
 
 const processResults = results =>
@@ -81,7 +87,7 @@ async function fetchSiteMetrics(url) {
   page.on('response', response => onNetworkResponse(response, page, state, url))
   page.on('error', error => utils.log(error, { err: true }))
   try {
-    const resp = await page.goto(`${url}`, { timeout: 45000 })
+    const resp = await page.goto(`${url}`, { timeout: GLOBAL_FETCH_TIMEOUT })
     if (!resp) {
       throw new Error(`got falsy page response for ${url} (probably 404)`)
       await browser.close()

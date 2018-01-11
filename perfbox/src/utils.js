@@ -39,10 +39,11 @@ function normalizeKey(val) {
 }
 
 const DEV_URL = [
-  'https://www.jumpro.pe/',
-  'http://admdejusticia.wixsite.com/admdejusticia',
-  'http://molchenko1983.wixsite.com/sushi-citi',
-  'http://mcclureterri.wixsite.com/phatt',
+  // 'https://www.jumpro.pe/',
+  // 'http://admdejusticia.wixsite.com/admdejusticia',
+  // 'http://molchenko1983.wixsite.com/sushi-citi',
+  // 'http://mcclureterri.wixsite.com/phatt',
+  'https://noticiasdmv.com/',
 ]
 
 const liner = new lineByLine('./urls.txt')
