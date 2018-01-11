@@ -3,19 +3,19 @@ const start = process.hrtime()
 const { fork, exec } = require('child_process')
 const { log, urlsGenerator } = require('./utils')
 const { add, getFilename, finalizeDataSet } = require('./dataset-builder')
+const { run, end } = require('./task')
 
-const execTask = url =>
-  new Promise(resolve => {
-    if (url) {
-      fork('./src/task.js', [url]).on('message', resolve)
-    } else {
-      resolve(false)
-    }
-  })
+async function execTask(url) {
+  if (url) {
+    return await run(url)
+  } else {
+    return Promise.resolve(false)
+  }
+}
 
 const manageExecution = () =>
   Promise.all(
-    new Array(1)
+    new Array(3)
       .join('c')
       .split('c')
       .map(() => execTask(urlsGenerator.next().value))
@@ -59,5 +59,6 @@ async function main() {
 
 ;(async () => {
   await main()
+  await end()
   log(`done`)
 })()
