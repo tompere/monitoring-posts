@@ -87,7 +87,7 @@ async function fetchSiteMetrics(url) {
   page.on('response', response => onNetworkResponse(response, page, state, url))
   page.on('error', error => utils.log(error, { err: true }))
   try {
-    const resp = await page.goto(`${url}`, { timeout: GLOBAL_FETCH_TIMEOUT })
+    const resp = await page.goto(url, { timeout: GLOBAL_FETCH_TIMEOUT })
     if (!resp) {
       throw new Error(`got falsy page response for ${url} (probably 404)`)
       await browser.close()

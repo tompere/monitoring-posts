@@ -35,7 +35,7 @@ async function main() {
         tasks.push(add(taskResult.output))
         count.success++
       } else if (taskResult.err) {
-        log(`[execution error] ur: ${taskResult.url}; message: ${taskResult.err}`, { err: true })
+        log(`[execution error] url: ${taskResult.url}; message: ${taskResult.err}`, { err: true })
         count.fail++
       }
       return shouldRun
