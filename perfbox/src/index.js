@@ -4,7 +4,7 @@ const { fork, exec } = require('child_process')
 const { log, urlsGenerator, executionId } = require('./utils')
 const fs = require('fs')
 
-const datasetFilePath = `${__dirname}/../../dataset-${executionId}.txt`
+const datasetFilePath = `${__dirname}/../dataset-${executionId}.txt`
 
 const add = output =>
   new Promise(resolve => {
