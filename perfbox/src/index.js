@@ -1,13 +1,29 @@
 const start = process.hrtime()
 
 const { fork, exec } = require('child_process')
-const { log, urlsGenerator } = require('./utils')
-const { add, getFilename, finalizeDataSet } = require('./dataset-builder')
+const { log, urlsGenerator, executionId } = require('./utils')
+const fs = require('fs')
+
+const datasetFilePath = `${__dirname}/../../dataset-${executionId}.txt`
+
+const add = output =>
+  new Promise(resolve => {
+    fs.appendFile(datasetFilePath, `${output}\n`, resolve)
+  })
 
 const execTask = url =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
     if (url) {
-      fork('./src/task.js', [url]).on('message', resolve)
+      const task = fork('./src/task.js', [url])
+      task.on('message', msg => {
+        clearTimeout(timeout)
+        resolve(msg)
+      })
+      const timeout = setTimeout(() => {
+        task.kill()
+        log(`task for url ${url} killed on timeout`, { err: true })
+        resolve(false)
+      }, 60000)
     } else {
       resolve(false)
     }
@@ -46,11 +62,10 @@ async function main() {
     log(`finished ${count.success} successful tasks, ${count.fail} failed tasks`)
   }
   const doneTasks = await Promise.all(tasks)
-  await finalizeDataSet()
   log(
     `finished successfully! analyzed ${doneTasks.length} sites in ${
       process.hrtime(start)[0]
-    } seconds; see ${getFilename()}`
+    } seconds; see ${datasetFilePath}`
   )
 }
 

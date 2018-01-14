@@ -33,6 +33,7 @@ process.on('unhandledRejection', err => log(err, { err: true }))
 function normalizeKey(val) {
   return val
     .trim()
+    .replace(/\s/g, '_')
     .split(/(?=[A-Z])/)
     .join('_')
     .toLowerCase()
@@ -44,7 +45,7 @@ const DEV_URL = [
   // 'http://molchenko1983.wixsite.com/sushi-citi',
   // 'http://mcclureterri.wixsite.com/phatt',
   // 'https://noticiasdmv.com/',
-  'http://cegh090480.wixsite.com/nissan',
+  // 'http://cegh090480.wixsite.com/nissan',
   'http://ccurtis0.wixsite.com/generatorsystems',
   'http://fatshark-marketing.wixsite.com/kampanjsida',
   'http://paulkknight95.wixsite.com/bitconnect',
