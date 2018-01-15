@@ -1,6 +1,5 @@
 const fs = require('fs')
 const _ = require('lodash')
-const prependFile = require('prepend-file')
 const lineByLine = require('n-readlines')
 
 const cache = { keys: null, firstObj: null, data: [] }
@@ -17,7 +16,7 @@ function collectData(jsonOutput) {
 }
 
 function* Rows() {
-  const liner = new lineByLine('../../dataset-exec_1515947794741.txt')
+  const liner = new lineByLine('../../dataset-2.txt')
   while (true) {
     const ln = liner.next()
     if (!ln) {
@@ -33,18 +32,14 @@ async function main() {
     collectData(row)
   }
   const keys = _.sortBy(cache.keys)
+  fs.appendFileSync(outputFile, `${keys.join(',')}\n`)
   const writes = []
   cache.data.forEach(o => {
     const result = _.pick(o, keys)
     const csvRow = `${_.values(result).join(',')}\n`
-    writes.push(
-      new Promise(resolve => {
-        fs.appendFile(outputFile, csvRow, () => resolve())
-      })
-    )
+    writes.push(new Promise(resolve => fs.appendFile(outputFile, csvRow, resolve)))
   })
   await Promise.all(writes)
-  prependFile(outputFile, `${keys.join(',')}\n`, _.noop)
 }
 
 main()
