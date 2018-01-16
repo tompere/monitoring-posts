@@ -1,6 +1,5 @@
 const lineByLine = require('n-readlines')
 const Raven = require('raven')
-const _ = require('lodash')
 
 const executionId = `exec_${new Date().getTime()}`
 
@@ -41,7 +40,15 @@ function normalizeKey(val) {
 }
 
 const DEV_URL = [
-  'https://www.jumpro.pe/',
+  // 'https://www.jumpro.pe/',
+  // 'http://admdejusticia.wixsite.com/admdejusticia',
+  // 'http://molchenko1983.wixsite.com/sushi-citi',
+  // 'http://mcclureterri.wixsite.com/phatt',
+  // 'https://noticiasdmv.com/',
+  // 'http://cegh090480.wixsite.com/nissan',
+  'http://ccurtis0.wixsite.com/generatorsystems',
+  'http://fatshark-marketing.wixsite.com/kampanjsida',
+  'http://paulkknight95.wixsite.com/bitconnect',
   'http://admin-countrythunder.wixsite.com/countrythunder',
   'http://rachelkathrynbrown.wixsite.com/moonwhiskersdolls',
   'http://simonukbanff.wixsite.com/banffuk',
@@ -56,22 +63,12 @@ function* urlsGenerator() {
     }
     return
   }
-  let pool = []
   while (true) {
     const ln = liner.next()
-    if (pool.length === 60) {
-      let shuffeled = _.shuffle(pool)
-      for (i in shuffeled) {
-        yield shuffeled[i]
-      }
-      pool = []
-    }
     if (!ln) {
       return
     }
-    const url = ln.toString('utf8')
-    pool.push(url, url, url)
-    yield url
+    yield ln.toString('utf8')
   }
 }
 
