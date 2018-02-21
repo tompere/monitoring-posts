@@ -1,6 +1,12 @@
 const puppeteer = require('puppeteer')
 const _ = require('lodash')
 const utils = require('../utils')
+require('dotenv').config()
+
+if (!process.env.COOKIE) {
+  utils.log('set cookie in .env file!', { err: true })
+  throw new Error()
+}
 
 const GLOBAL_FETCH_TIMEOUT = 45000
 
@@ -13,10 +19,8 @@ const pageJsonMetrics = page => {
 
 const userMeasuresMetrics = measures =>
   _(measures)
-    .orderBy(measureObj => measureObj.duration)
-    .map((measureObj, i) => ({
-      [utils.normalizeKey(`santa_${measureObj.name}_duration_rank`)]: i,
-      [utils.normalizeKey(`santa_${measureObj.name}_duration`)]: measureObj.duration,
+    .map(measureObj => ({
+      [`meausre_${utils.normalizeKey(measureObj.name)}`]: measureObj.duration,
     }))
     .value()
     .reduce((res, o) => ({ ...res, ...o }), {})
@@ -26,8 +30,8 @@ const puppeteerPageMetrics = obj =>
 
 const extractMetrics = result => {
   switch (result.type) {
-    case 'pageJson':
-      return pageJsonMetrics(result.value)
+    case 'storyJson':
+      return result.value
     case 'measures':
       return userMeasuresMetrics(result.value)
     case 'pageMetrics':
@@ -37,9 +41,10 @@ const extractMetrics = result => {
   }
 }
 
-const isPageJsonResponse = url => _.includes(url, 'json.z?v=3')
+const isStoryJson = url =>
+  _.includes(url, '/_api/onboarding-server-web/story') && !_.includes(url, 'metadata')
 
-const isPageLoadDone = url => _.includes(url, '&evid=350')
+const isPageLoadDone = url => _.includes(url, '&src=66&evid=50')
 
 const pageDoneDefered = state =>
   new Promise(resolve => {
@@ -59,14 +64,11 @@ const processResults = results =>
     {}
   )
 
-const VALID_RESPONSE_CODES = [200, 301]
+const VALID_RESPONSE_CODES = [200]
 
 async function onNetworkResponse(response, page, state, originUrl) {
-  if (response.url === originUrl && !_.includes(VALID_RESPONSE_CODES, response.status)) {
-    utils.log(`got ${response.status} for site ${response.url}`, { err: true })
-    state.reportPageDone()
-  } else if (isPageJsonResponse(response.url)) {
-    state.results.push(asyncResult('pageJson', response.json()))
+  if (isStoryJson(response.url)) {
+    state.results.push(asyncResult('storyJson', response.json()))
   } else if (isPageLoadDone(response.url)) {
     state.results.push(asyncResult('pageMetrics', page.metrics()))
     const measures = await page.evaluate(() =>
@@ -84,6 +86,12 @@ async function fetchSiteMetrics(url) {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   })
   const page = await browser.newPage()
+  await page.setCookie({
+    url: 'https://www.wix.com',
+    name: 'wixSession2',
+    value: process.env.COOKIE,
+    domain: '.wix.com',
+  })
   page.on('response', response => onNetworkResponse(response, page, state, url))
   page.on('error', error => utils.log(error, { err: true }))
   try {

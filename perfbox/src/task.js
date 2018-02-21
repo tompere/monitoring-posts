@@ -6,27 +6,17 @@ const url = process.argv[2]
 
 fetcher
   .fetchSiteMetrics(`${url}`)
-  .then(({ masterPage, page, ...otherMetrics }) => {
-    if (masterPage && page) {
-      const y = [
-        'santa_render_duration',
-        'santa_layout_duration',
-        'santa_re_layout_duration',
-      ].reduce((total, metricKey) => total + otherMetrics[metricKey], 0)
-      const output = JSON.stringify({
-        ...otherMetrics,
-        y,
-      })
-      const duration = process.hrtime(start)[0]
-      process.send({ url, output, duration })
-    } else {
-      process.send({
-        url,
-        output: null,
-        duration: 0,
-        err: `missing pages: [${masterPage ? '' : 'masterPage'}], [${page ? '' : 'page'}]`,
-      })
-    }
+  .then(metrics => {
+    const init_builder = metrics['meausre_init_builder']
+    const load_preview_url = metrics['meausre_load_preview_url']
+    const set_up_cache_by_kit = metrics['meausre_set_up_cache_by_kit']
+    const y = init_builder - (load_preview_url + set_up_cache_by_kit)
+    const output = JSON.stringify({
+      ...metrics,
+      y,
+    })
+    const duration = process.hrtime(start)[0]
+    process.send({ url, output, duration })
   })
   .catch(err => {
     process.send({ url, output: null, duration: 0, err: `failed fetching pages: ${err}` })

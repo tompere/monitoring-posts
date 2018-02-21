@@ -4,3 +4,4 @@ result.json
 dataset-*.json
 dataset-*.csv
 dataset-*.txt
+.env

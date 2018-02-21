@@ -39,20 +39,7 @@ function normalizeKey(val) {
     .toLowerCase()
 }
 
-const DEV_URL = [
-  // 'https://www.jumpro.pe/',
-  // 'http://admdejusticia.wixsite.com/admdejusticia',
-  // 'http://molchenko1983.wixsite.com/sushi-citi',
-  // 'http://mcclureterri.wixsite.com/phatt',
-  // 'https://noticiasdmv.com/',
-  // 'http://cegh090480.wixsite.com/nissan',
-  'http://ccurtis0.wixsite.com/generatorsystems',
-  'http://fatshark-marketing.wixsite.com/kampanjsida',
-  'http://paulkknight95.wixsite.com/bitconnect',
-  'http://admin-countrythunder.wixsite.com/countrythunder',
-  'http://rachelkathrynbrown.wixsite.com/moonwhiskersdolls',
-  'http://simonukbanff.wixsite.com/banffuk',
-]
+const DEV_URL = []
 
 const liner = new lineByLine('./urls.txt')
 
