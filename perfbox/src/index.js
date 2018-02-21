@@ -31,7 +31,7 @@ const execTask = url =>
 
 const manageExecution = () =>
   Promise.all(
-    new Array(3)
+    new Array(2)
       .join('c')
       .split('c')
       .map(() => execTask(urlsGenerator.next().value))
