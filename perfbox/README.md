@@ -1,6 +1,11 @@
-# perfbox
+# perfbox - ADI analysis
 
-* [ ] create dataset (each row per site).
-* [ ] target variable is load time.
-* [ ] execute perfbox with (puppeteer)[https://github.com/GoogleChrome/puppeteer]
-* [ ] intercept network requests to retrieve pages JSON.
+## TODOs
+
+* [] prefetch cached (disable network effect)
+
+## options
+
+* effect of story's JSON on measures
+* ! interal relations of measures
+* everything that happens in a specific measure
