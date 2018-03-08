@@ -75,24 +75,7 @@ async function onNetworkResponse(response, page, state) {
   }
 }
 
-const loadCache = () => {
-  const cache = {}
-  const line = new lineByLine(CACHE_FILE)
-  while (true) {
-    const ln = line.next()
-    if (!ln) {
-      break
-    }
-    const r = JSON.parse(ln)
-    cache[r.url] = { payload: r.payload, headers: r.headers }
-  }
-  return cache
-}
-
-async function fetchSiteMetrics(url) {
-  const start = process.hrtime() //(start)[0]
-  const resourcesCache = loadCache()
-  console.log(`---- read cache in ${process.hrtime(start)[0]} secs`)
+async function fetchSiteMetrics(url, resourcesCache) {
   const state = { results: [] }
   const isPageDone = pageDoneDefered(state)
   const browser = await puppeteer.launch({

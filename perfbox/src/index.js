@@ -8,6 +8,22 @@ const lineByLine = require('n-readlines')
 
 const datasetFilePath = `${__dirname}/../dataset-${executionId}.txt`
 
+let cache
+
+const loadCache = cacheFile => {
+  const res = {}
+  const line = new lineByLine(cacheFile)
+  while (true) {
+    const ln = line.next()
+    if (!ln) {
+      break
+    }
+    const r = JSON.parse(ln)
+    res[r.url] = { payload: r.payload }
+  }
+  return res
+}
+
 const add = output =>
   new Promise(resolve => {
     fs.appendFile(datasetFilePath, `${output}\n`, resolve)
@@ -17,6 +33,7 @@ const execTask = url =>
   new Promise((resolve, reject) => {
     if (url) {
       const task = fork('./src/task.js', [url])
+      task.send({ cache })
       task.on('message', msg => {
         if (msg.done) {
           clearTimeout(timeout)
@@ -41,22 +58,8 @@ const manageExecution = () =>
       .map(() => execTask(urlsGenerator.next().value))
   )
 
-const loadCache = cacheFile => {
-  const cache = {}
-  const line = new lineByLine(cacheFile)
-  while (true) {
-    const ln = line.next()
-    if (!ln) {
-      break
-    }
-    const r = JSON.parse(ln)
-    cache[r.url] = { payload: r.payload }
-  }
-  return cache
-}
-
 async function main() {
-  const cache = loadCache(await populateCache())
+  cache = loadCache(await populateCache())
   const tasks = []
   while (true) {
     const count = { success: 0, fail: 0 }
