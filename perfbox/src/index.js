@@ -11,7 +11,6 @@ const datasetFilePath = `${__dirname}/../dataset-${executionId}.txt`
 let cache
 
 const loadCache = cacheFile => {
-  const res = {}
   const line = new lineByLine(cacheFile)
   while (true) {
     const ln = line.next()
@@ -19,9 +18,8 @@ const loadCache = cacheFile => {
       break
     }
     const r = JSON.parse(ln)
-    res[r.url] = { payload: r.payload }
+    cache[r.url] = { payload: r.payload }
   }
-  return res
 }
 
 const add = output =>
@@ -59,7 +57,7 @@ const manageExecution = () =>
   )
 
 async function main() {
-  cache = loadCache(await populateCache())
+  loadCache(await populateCache())
   const tasks = []
   while (true) {
     const count = { success: 0, fail: 0 }

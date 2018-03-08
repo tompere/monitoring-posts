@@ -75,7 +75,7 @@ async function onNetworkResponse(response, page, state) {
   }
 }
 
-async function fetchSiteMetrics(url, resourcesCache) {
+async function fetchSiteMetrics(url, cache) {
   const state = { results: [] }
   const isPageDone = pageDoneDefered(state)
   const browser = await puppeteer.launch({
