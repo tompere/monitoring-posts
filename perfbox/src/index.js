@@ -8,7 +8,7 @@ const lineByLine = require('n-readlines')
 
 const datasetFilePath = `${__dirname}/../dataset-${executionId}.txt`
 
-let cache
+let cache = {}
 
 const loadCache = cacheFile => {
   const line = new lineByLine(cacheFile)
