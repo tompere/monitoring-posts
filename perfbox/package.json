@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "exec": "PRODUCTION=true node src/index.js",
+    "exec": "PRODUCTION=true node --max-old-space-size=10000 src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean":
       "ps aux | awk '$11 ~ /node/ {print $2}' | xargs kill ; rm -rf dataset-* ; rm -rf src/cache.txt"
