@@ -73,6 +73,7 @@ async function onNetworkResponse(response, page, state) {
     state.results.push(asyncResult('measures', JSON.parse(measures)))
     state.reportPageDone()
   }
+  console.log('>', response.url)
 }
 
 async function fetchSiteMetrics(url, resourcesCache) {
