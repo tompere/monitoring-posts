@@ -91,7 +91,10 @@ async function fetchSiteMetrics(url, resourcesCache) {
   })
   await page.setRequestInterception(true)
   page.on('request', async request => {
-    if (_.includes(request.url, 'frog.wix.com') && !isPageLoadDone(request.url)) {
+    if (
+      (_.includes(request.url, 'frog.wix.com') || _.includes(request.url, '.newrelic.com')) &&
+      !isPageLoadDone(request.url)
+    ) {
       request.respond({})
       return
     }
@@ -149,7 +152,7 @@ async function populateCache() {
     if (isPageLoadDone(url)) {
       state.reportPageDone()
     } else if (
-      _.includes(url, 'static.parastorage.com') &&
+      (_.includes(url, 'static.parastorage.com') || _.includes(url, 'maps.googleapis.com')) &&
       /(\.css|\.js)/.test(url) &&
       !/(\.zip\.js)/.test(url)
     ) {
