@@ -18,8 +18,10 @@ const execTask = url =>
     if (url) {
       const task = fork('./src/task.js', [url])
       task.on('message', msg => {
-        clearTimeout(timeout)
-        resolve(msg)
+        if (msg.done) {
+          clearTimeout(timeout)
+          resolve(msg)
+        }
       })
       const timeout = setTimeout(() => {
         task.kill()
