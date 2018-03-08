@@ -1,32 +1,31 @@
 const puppeteer = require('puppeteer')
 const _ = require('lodash')
-const utils = require('../utils')
+const { log, normalizeKey } = require('../utils')
+const fs = require('fs')
+const lineByLine = require('n-readlines')
+
 require('dotenv').config()
 
+const CACHE_FILE = `${__dirname}/../cache.txt`
+
 if (!process.env.COOKIE) {
-  utils.log('set cookie in .env file!', { err: true })
+  log('set cookie in .env file!', { err: true })
   throw new Error()
 }
 
-const GLOBAL_FETCH_TIMEOUT = 45000
+const GLOBAL_FETCH_TIMEOUT = 450000
 
 const asyncResult = (type, result) => Promise.resolve(result).then(value => ({ type, value }))
-
-const pageJsonMetrics = page => {
-  const key = !('title' in page) && !('pageUriSEO' in page) ? 'masterPage' : 'page'
-  return { [key]: page }
-}
 
 const userMeasuresMetrics = measures =>
   _(measures)
     .map(measureObj => ({
-      [`meausre_${utils.normalizeKey(measureObj.name)}`]: measureObj.duration,
+      [`meausre_${normalizeKey(measureObj.name)}`]: measureObj.duration,
     }))
     .value()
     .reduce((res, o) => ({ ...res, ...o }), {})
 
-const puppeteerPageMetrics = obj =>
-  _.mapKeys(obj, (value, key) => utils.normalizeKey(`puppeteer_${key}`))
+const puppeteerPageMetrics = obj => _.mapKeys(obj, (value, key) => normalizeKey(`puppeteer_${key}`))
 
 const extractMetrics = result => {
   switch (result.type) {
@@ -66,11 +65,8 @@ const processResults = results =>
 
 const VALID_RESPONSE_CODES = [200]
 
-async function onNetworkResponse(response, page, state, originUrl) {
-  if (isStoryJson(response.url)) {
-    state.results.push(asyncResult('storyJson', response.json()))
-  } else if (isPageLoadDone(response.url)) {
-    state.results.push(asyncResult('pageMetrics', page.metrics()))
+async function onNetworkResponse(response, page, state) {
+  if (isPageLoadDone(response.url)) {
     const measures = await page.evaluate(() =>
       JSON.stringify(performance.getEntriesByType('measure'))
     )
@@ -79,8 +75,78 @@ async function onNetworkResponse(response, page, state, originUrl) {
   }
 }
 
+const loadCache = () => {
+  const cache = {}
+  const line = new lineByLine(CACHE_FILE)
+  while (true) {
+    const ln = line.next()
+    if (!ln) {
+      break
+    }
+    const r = JSON.parse(ln)
+    cache[r.url] = { payload: r.payload, headers: r.headers }
+  }
+  return cache
+}
+
 async function fetchSiteMetrics(url) {
+  const start = process.hrtime() //(start)[0]
+  const resourcesCache = loadCache()
+  console.log(`---- read cache in ${process.hrtime(start)[0]} secs`)
   const state = { results: [] }
+  const isPageDone = pageDoneDefered(state)
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    // headless: false,
+  })
+  const page = await browser.newPage()
+  await page.setCookie({
+    url: 'https://www.wix.com',
+    name: 'wixSession2',
+    value: process.env.COOKIE,
+    domain: '.wix.com',
+  })
+  await page.setRequestInterception(true)
+  page.on('request', async request => {
+    if (_.includes(request.url, 'frog.wix.com') && !isPageLoadDone(request.url)) {
+      request.respond({})
+      return
+    }
+    const resource = resourcesCache[request.url]
+    if (resource) {
+      const body = Buffer.from(JSON.parse(resource.payload).data, 'utf8')
+      await request.respond({
+        status: 200,
+        body,
+        headers: resource.headers,
+      })
+      return
+    }
+    request.continue()
+  })
+  page.on('response', response => onNetworkResponse(response, page, state, resourcesCache))
+  page.on('error', error => log(error, { err: true }))
+  try {
+    const start = process.hrtime() //(start)[0]
+    const resp = await page.goto(url, { timeout: GLOBAL_FETCH_TIMEOUT })
+    if (!resp) {
+      throw new Error(`got falsy page response for ${url} (probably 404)`)
+      await browser.close()
+    }
+    await isPageDone
+    await browser.close()
+    console.log(`---- done in ${process.hrtime(start)[0]} secs`)
+    const rawResults = await Promise.all(state.results)
+    return processResults(rawResults)
+  } catch (err) {
+    log(err, { err: true })
+    await browser.close()
+    return null
+  }
+}
+
+async function populateCache() {
+  const state = {}
   const isPageDone = pageDoneDefered(state)
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
@@ -92,23 +158,42 @@ async function fetchSiteMetrics(url) {
     value: process.env.COOKIE,
     domain: '.wix.com',
   })
-  page.on('response', response => onNetworkResponse(response, page, state, url))
-  page.on('error', error => utils.log(error, { err: true }))
-  try {
-    const resp = await page.goto(url, { timeout: GLOBAL_FETCH_TIMEOUT })
-    if (!resp) {
-      throw new Error(`got falsy page response for ${url} (probably 404)`)
-      await browser.close()
-    }
-    await isPageDone
-    await browser.close()
-    const rawResults = await Promise.all(state.results)
-    return processResults(rawResults)
-  } catch (err) {
-    utils.log(err, { err: true })
-    await browser.close()
-    return null
+  if (fs.existsSync(CACHE_FILE)) {
+    fs.unlinkSync(CACHE_FILE)
   }
+  page.on('response', async response => {
+    const { url, headers } = response
+    if (isPageLoadDone(url)) {
+      state.reportPageDone()
+    } else if (
+      _.includes(url, 'static.parastorage.com') &&
+      /(\.css|\.js)/.test(url) &&
+      !/(\.zip\.js)/.test(url)
+    ) {
+      const buffer = await response.buffer()
+      fs.appendFile(
+        CACHE_FILE,
+        `${JSON.stringify({
+          url,
+          payload: JSON.stringify(buffer),
+        })}\n`,
+        'utf8',
+        _.noop
+      )
+    }
+  })
+  page.on('error', error => log(error, { err: true }))
+  try {
+    const resp = await page.goto(
+      'https://www.wix.com/website/builder/#!/builder/story/2fd34d6a-21f0-4c8f-a9dc-10f955bc38b8:49ab6231-7b3c-4bc9-8577-cad58130ab8c',
+      { timeout: GLOBAL_FETCH_TIMEOUT }
+    )
+    await isPageDone
+  } catch (err) {
+    log(err, { err: true })
+  }
+  await browser.close()
+  return CACHE_FILE
 }
 
-module.exports = { fetchSiteMetrics }
+module.exports = { fetchSiteMetrics, populateCache }

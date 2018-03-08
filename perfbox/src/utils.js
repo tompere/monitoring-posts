@@ -39,7 +39,9 @@ function normalizeKey(val) {
     .toLowerCase()
 }
 
-const DEV_URL = []
+const DEV_URL = [
+  'https://www.wix.com/website/builder/#!/builder/story/360c036c-7362-4b2b-be34-19b5340d3556:86c7ada5-f9f3-4077-b207-2ab3497958b6',
+]
 
 const liner = new lineByLine('./urls.txt')
 

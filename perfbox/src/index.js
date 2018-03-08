@@ -3,6 +3,8 @@ const start = process.hrtime()
 const { fork, exec } = require('child_process')
 const { log, urlsGenerator, executionId } = require('./utils')
 const fs = require('fs')
+const { populateCache } = require('./fecther/fetcher')
+const lineByLine = require('n-readlines')
 
 const datasetFilePath = `${__dirname}/../dataset-${executionId}.txt`
 
@@ -37,7 +39,22 @@ const manageExecution = () =>
       .map(() => execTask(urlsGenerator.next().value))
   )
 
+const loadCache = cacheFile => {
+  const cache = {}
+  const line = new lineByLine(cacheFile)
+  while (true) {
+    const ln = line.next()
+    if (!ln) {
+      break
+    }
+    const r = JSON.parse(ln)
+    cache[r.url] = { payload: r.payload }
+  }
+  return cache
+}
+
 async function main() {
+  const cache = loadCache(await populateCache())
   const tasks = []
   while (true) {
     const count = { success: 0, fail: 0 }
