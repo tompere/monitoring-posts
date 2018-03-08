@@ -25,7 +25,7 @@ const userMeasuresMetrics = measures =>
     .value()
     .reduce((res, o) => ({ ...res, ...o }), {})
 
-const puppeteerPageMetrics = obj => _.mapKeys(obj, (value, key) => normalizeKey(`puppeteer_${key}`))
+const generalMetrics = obj => _.mapKeys(obj, (value, key) => normalizeKey(key))
 
 const extractMetrics = result => {
   switch (result.type) {
@@ -33,8 +33,8 @@ const extractMetrics = result => {
       return result.value
     case 'measures':
       return userMeasuresMetrics(result.value)
-    case 'pageMetrics':
-      return puppeteerPageMetrics(result.value)
+    case 'general':
+      return generalMetrics(result.value)
     default:
       return {}
   }
@@ -121,8 +121,9 @@ async function fetchSiteMetrics(url, resourcesCache) {
     }
     await isPageDone
     await browser.close()
-    console.log(`---- done in ${process.hrtime(start)[0]} secs`)
     const rawResults = await Promise.all(state.results)
+    const _duration = process.hrtime(start)[0]
+    rawResults.push({ type: 'general', value: { _duration } })
     return processResults(rawResults)
   } catch (err) {
     log(err, { err: true })

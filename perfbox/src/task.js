@@ -1,5 +1,4 @@
 const start = process.hrtime()
-const compItemsMetadata = require('./pageJson/data-items/comps-data-items')
 const fetcher = require('./fecther/fetcher')
 
 const url = process.argv[2]
