@@ -4,11 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "exec": "PRODUCTION=true node --max-old-space-size=4096 src/index.js",
+    "start": "npm run clean ; node src/index.js",
+    "exec": "npm run clean ; PRODUCTION=true node --max-old-space-size=4096 src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean":
-      "ps aux | awk '$11 ~ /node/ {print $2}' | xargs kill ; rm -rf dataset-* ; rm -rf src/cache.txt"
+    "clean": "pkill -f perfbox ; rm -rf dataset-* ; rm -rf src/cache.txt"
   },
   "author": "",
   "license": "ISC",
