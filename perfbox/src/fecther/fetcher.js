@@ -73,7 +73,6 @@ async function onNetworkResponse(response, page, state) {
     state.results.push(asyncResult('measures', JSON.parse(measures)))
     state.reportPageDone()
   }
-  console.log('>', response.url)
 }
 
 async function fetchSiteMetrics(url, resourcesCache) {
@@ -140,6 +139,7 @@ async function populateCache() {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   })
   const page = await browser.newPage()
+  log('[puppeteer, populateCache] successfully created new page')
   await page.setCookie({
     url: 'https://www.wix.com',
     name: 'wixSession2',
@@ -176,6 +176,7 @@ async function populateCache() {
       'https://www.wix.com/website/builder/#!/builder/story/2fd34d6a-21f0-4c8f-a9dc-10f955bc38b8:49ab6231-7b3c-4bc9-8577-cad58130ab8c',
       { timeout: GLOBAL_FETCH_TIMEOUT }
     )
+    log('[puppeteer, populateCache] page load started')
     await isPageDone
   } catch (err) {
     log(err, { err: true })
