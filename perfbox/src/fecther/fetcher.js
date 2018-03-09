@@ -115,10 +115,12 @@ async function fetchSiteMetrics(url, resourcesCache) {
   try {
     const start = process.hrtime() //(start)[0]
     const resp = await page.goto(url, { timeout: GLOBAL_FETCH_TIMEOUT })
+    log(`[puppeteer, fetchSiteMetrics] page load started (${url})`)
     if (!resp) {
       throw new Error(`got falsy page response for ${url} (probably 404)`)
       await browser.close()
     }
+    log(`[puppeteer, fetchSiteMetrics] waiting for page to be done (${url})`)
     await isPageDone
     await browser.close()
     const rawResults = await Promise.all(state.results)
@@ -166,7 +168,7 @@ async function populateCache() {
           payload: JSON.stringify(buffer),
         })}\n`,
         'utf8',
-        _.noop
+        () => log(`[populateCache] wrote payload to cache (${url})`)
       )
     }
   })
