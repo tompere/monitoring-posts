@@ -31,7 +31,7 @@ const execTask = url =>
   new Promise((resolve, reject) => {
     if (url) {
       const task = fork('./src/task.js', [url], {
-        execArgv: ['--max-old-space-size=4096'],
+        execArgv: ['--max-old-space-size=4096', 'EXEC_HOOK=perfbox'],
       })
       task.send({ cache })
       const timeout = setTimeout(() => {
