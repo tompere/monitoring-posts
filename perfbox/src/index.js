@@ -34,17 +34,17 @@ const execTask = url =>
         execArgv: ['--max-old-space-size=4096'],
       })
       task.send({ cache })
+      const timeout = setTimeout(() => {
+        task.kill()
+        log(`task for url ${url} killed on timeout`, { err: true })
+        resolve(false)
+      }, 240000)
       task.on('message', msg => {
         if (msg.done) {
           clearTimeout(timeout)
           resolve(msg)
         }
       })
-      const timeout = setTimeout(() => {
-        task.kill()
-        log(`task for url ${url} killed on timeout`, { err: true })
-        resolve(false)
-      }, 60000)
     } else {
       resolve(false)
     }
@@ -52,7 +52,7 @@ const execTask = url =>
 
 const manageExecution = () =>
   Promise.all(
-    new Array(2)
+    new Array(1)
       .join('c')
       .split('c')
       .map(() => execTask(urlsGenerator.next().value))

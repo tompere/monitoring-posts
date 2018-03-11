@@ -13,7 +13,7 @@ if (!process.env.COOKIE) {
   throw new Error()
 }
 
-const GLOBAL_FETCH_TIMEOUT = 450000
+const GLOBAL_FETCH_TIMEOUT = 180000
 
 const asyncResult = (type, result) => Promise.resolve(result).then(value => ({ type, value }))
 
