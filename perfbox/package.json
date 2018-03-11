@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run clean ; node src/index.js",
+    "start": "node src/index.js",
     "exec": "npm run clean ; PRODUCTION=true node --max-old-space-size=4096 src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "pkill -f perfbox ; rm -rf ./cache/cache.txt; rm -rf dataset-*"
