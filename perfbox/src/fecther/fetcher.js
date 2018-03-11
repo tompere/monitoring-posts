@@ -82,6 +82,7 @@ async function fetchSiteMetrics(url, resourcesCache) {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     // headless: false,
   })
+  log(`launched puppeteer for url ${url}`)
   const page = await browser.newPage()
   await page.setCookie({
     url: 'https://www.wix.com',
@@ -126,6 +127,7 @@ async function fetchSiteMetrics(url, resourcesCache) {
   try {
     const start = process.hrtime() //(start)[0]
     const resp = await page.goto(url, { timeout: GLOBAL_FETCH_TIMEOUT })
+    log(`successfully execute goto for url ${url}`)
     if (!resp) {
       throw new Error(`got falsy page response for ${url} (probably 404)`)
       await browser.close()

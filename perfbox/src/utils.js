@@ -41,6 +41,7 @@ function normalizeKey(val) {
 
 const DEV_URL = [
   'https://www.wix.com/website/builder/#!/builder/story/360c036c-7362-4b2b-be34-19b5340d3556:86c7ada5-f9f3-4077-b207-2ab3497958b6',
+  'https://www.wix.com/website/builder/#!/builder/story/f0da7aa4-f125-44bc-97d9-262aaf4138bd:5c99e122-7f10-426c-98ca-6e4aac1fbb91',
 ]
 
 const liner = new lineByLine('./urls.txt')

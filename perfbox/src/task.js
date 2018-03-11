@@ -1,10 +1,12 @@
 const start = process.hrtime()
 const fetcher = require('./fecther/fetcher')
+const { log } = require('./utils')
 
 const url = process.argv[2]
 
 process.on('message', msg => {
   const { cache } = msg
+  log(`starting fetching ${url}`)
   fetcher
     .fetchSiteMetrics(url, cache)
     .then(metrics => {
