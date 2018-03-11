@@ -115,12 +115,10 @@ async function fetchSiteMetrics(url, resourcesCache) {
   try {
     const start = process.hrtime() //(start)[0]
     const resp = await page.goto(url, { timeout: GLOBAL_FETCH_TIMEOUT })
-    log(`[puppeteer, fetchSiteMetrics] page load started (${url})`)
     if (!resp) {
       throw new Error(`got falsy page response for ${url} (probably 404)`)
       await browser.close()
     }
-    log(`[puppeteer, fetchSiteMetrics] waiting for page to be done (${url})`)
     await isPageDone
     await browser.close()
     const rawResults = await Promise.all(state.results)
@@ -141,7 +139,6 @@ async function populateCache() {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   })
   const page = await browser.newPage()
-  log('[puppeteer, populateCache] successfully created new page')
   await page.setCookie({
     url: 'https://www.wix.com',
     name: 'wixSession2',
@@ -168,7 +165,7 @@ async function populateCache() {
           payload: JSON.stringify(buffer),
         })}\n`,
         'utf8',
-        () => log(`[populateCache] wrote payload to cache (${url})`)
+        _.noop
       )
     }
   })
@@ -178,7 +175,6 @@ async function populateCache() {
       'https://www.wix.com/website/builder/#!/builder/story/2fd34d6a-21f0-4c8f-a9dc-10f955bc38b8:49ab6231-7b3c-4bc9-8577-cad58130ab8c',
       { timeout: GLOBAL_FETCH_TIMEOUT }
     )
-    log('[puppeteer, populateCache] page load started')
     await isPageDone
   } catch (err) {
     log(err, { err: true })
