@@ -5,4 +5,4 @@ dataset-*.json
 dataset-*.csv
 dataset-*.txt
 .env
-src/cache.txt
+cache/cache.txt

@@ -6,7 +6,7 @@ const lineByLine = require('n-readlines')
 
 require('dotenv').config()
 
-const CACHE_FILE = `${__dirname}/../cache.txt`
+const CACHE_FILE = `${__dirname}/../../cache/cache.txt`
 
 if (!process.env.COOKIE) {
   log('set cookie in .env file!', { err: true })
@@ -91,20 +91,31 @@ async function fetchSiteMetrics(url, resourcesCache) {
   })
   await page.setRequestInterception(true)
   page.on('request', async request => {
+    const { url } = request
     if (
-      (_.includes(request.url, 'frog.wix.com') || _.includes(request.url, '.newrelic.com')) &&
-      !isPageLoadDone(request.url)
+      (_.includes(url, 'frog.wix.com') || _.includes(url, '.newrelic.com')) &&
+      !isPageLoadDone(url)
     ) {
       request.respond({})
       return
     }
-    const resource = resourcesCache[request.url]
+    const resource = resourcesCache[url]
     if (resource) {
       const body = Buffer.from(JSON.parse(resource.payload).data, 'utf8')
       await request.respond({
         status: 200,
         body,
-        headers: resource.headers,
+      })
+      return
+    }
+    if (_.includes(url, 'static.wixstatic.com') && /\.webp/.test(url)) {
+      await request.respond({
+        status: 200,
+        body: Buffer.from(JSON.parse(resourcesCache['.webp'].payload).data, 'utf8'),
+        headers: {
+          'content-type': 'image/webp; charset=utf-8',
+          'cache-control': 'max-age=3600',
+        },
       })
       return
     }
@@ -148,6 +159,20 @@ async function populateCache() {
   if (fs.existsSync(CACHE_FILE)) {
     fs.unlinkSync(CACHE_FILE)
   }
+  const mediaCache = {}
+  ;['webp'].forEach(ext => {
+    fs.readFile(`${__dirname}/../../cache/dummy_adi.${ext}`, (err, buffer) => {
+      fs.appendFile(
+        CACHE_FILE,
+        `${JSON.stringify({
+          url: `.${ext}`,
+          payload: JSON.stringify(buffer),
+        })}\n`,
+        'utf8',
+        _.noop
+      )
+    })
+  })
   page.on('response', async response => {
     const { url, headers } = response
     if (isPageLoadDone(url)) {
